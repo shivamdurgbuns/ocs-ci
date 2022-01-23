@@ -165,19 +165,19 @@ class TestNodesMaintenance(ManageTest):
         argvalues=[
             pytest.param(
                 *["worker", "vm_restart"],
-                marks=[tier4, tier4b, pytest.mark.polarion_id("OCS-1292")],
+                marks=[pytest.mark.polarion_id("OCS-1292"), tier4, pytest.mark.tier4b],
             ),
             pytest.param(
                 *["worker", "os_restart"],
-                marks=[tier1, pytest.mark.polarion_id("OCS-XXXX")],
+                marks=[pytest.mark.polarion_id("OCS-XXXX"), tier1],
             ),
             pytest.param(
                 *["master", "vm_restart"],
-                marks=[tier4, tier4b, pytest.mark.polarion_id("OCS-1293")],
+                marks=[pytest.mark.polarion_id("OCS-1293"), tier4, pytest.mark.tier4b],
             ),
             pytest.param(
                 *["master", "os_restart"],
-                marks=[tier1, pytest.mark.polarion_id("OCS-XXXX")],
+                marks=[pytest.mark.polarion_id("OCS-XXXX"), tier1],
             ),
         ],
     )
@@ -194,7 +194,7 @@ class TestNodesMaintenance(ManageTest):
         """
         OCS-1292/OCS-1293:
         - Maintenance (mark as unscheduable and drain) 1 worker/master node
-        - Restart the node - either by VM restart of OS reboot
+        - Restart the node - either by VM restart or OS reboot
         - Mark the node as scheduable
         - Check cluster and Ceph health
         - Check cluster functionality by creating and deleting resources
