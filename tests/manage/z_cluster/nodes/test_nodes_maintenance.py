@@ -223,7 +223,12 @@ class TestNodesMaintenance(ManageTest):
         elif restart_method == "os_restart":
             # Restarting the node via the OS
             node = OCP(kind="node")
-            return node.exec_oc_debug_cmd(typed_node_name, ["reboot"])
+            try:
+                node.exec_oc_debug_cmd(
+                    node=typed_node_name, cmd_list=["reboot"], timeout=10
+                )
+            except TimeoutExpired:
+                log.info(f"Node {typed_node_name} got rebooted")
 
         try:
             wait_for_nodes_status(
