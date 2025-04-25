@@ -407,7 +407,7 @@ def mirror_index_image_via_oc_mirror(index_image, packages, icsp=None, idms=None
     # create ImageDigestMirrorSet
     idms_file = os.path.join(
         f"{mirroring_manifests_dir}",
-        "imageDigestMirrorSet.yaml",
+        "working-dir/cluster-resources/idms-oc-mirror.yaml",
     )
 
     # # make icsp name unique - append run_id
@@ -429,12 +429,20 @@ def mirror_index_image_via_oc_mirror(index_image, packages, icsp=None, idms=None
     wait_for_machineconfigpool_status("all")
 
     # get mirrored index image url from prepared catalogSource file
-    cs_file = glob.glob(
-        os.path.join(
-            f"{mirroring_manifests_dir}",
-            "catalogSource-*.yaml",
+    if idms:
+        cs_file = glob.glob(
+            os.path.join(
+                f"{mirroring_manifests_dir}",
+                "working-dir/cluster-resources/cs*.yaml",
+            )
         )
-    )
+    else:
+        cs_file = glob.glob(
+            os.path.join(
+                f"{mirroring_manifests_dir}",
+                "cs-*.yaml",
+            )
+        )
     if not cs_file:
         raise NotFoundError(
             "CatalogSource file not found in the '{mirroring_manifests_dir}'."
