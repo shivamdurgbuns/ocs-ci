@@ -402,7 +402,7 @@ class PrometheusAPI(object):
             kube_data = ""
             with open(kubeconfig, "r") as kube_file:
                 kube_data = kube_file.readlines()
-            login_ok = ocp.login(self._user, self._password)
+            login_ok = ocp.login(self._user, self._password, skip_tls_verify=True)
             if not login_ok:
                 raise AuthError("Login to OCP failed")
             self._token = ocp.get_user_token()

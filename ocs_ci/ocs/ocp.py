@@ -647,7 +647,7 @@ class OCP(object):
             return True
         raise CommandFailed(f"{project_name} was not deleted")
 
-    def login(self, user, password):
+    def login(self, user, password, skip_tls_verify=False):
         """
         Logs user in
 
@@ -660,6 +660,8 @@ class OCP(object):
 
         """
         command = ["oc", "login", "-u", user, "-p", password]
+        if skip_tls_verify:
+            command.append("--insecure-skip-tls-verify")
         status = exec_cmd(
             command, secrets=[password], threading_lock=self.threading_lock
         )
