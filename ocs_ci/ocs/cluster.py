@@ -2680,6 +2680,25 @@ class CephClusterExternal(CephCluster):
 
     @retry((IndexError, AttributeError, TypeError), 60, 20, 1)
     def wait_for_nooba_cr(self):
+        # Check if NooBaa operator deployment exists and has replicas > 0
+        try:
+            noobaa_deployment = ocp.OCP(
+                kind="Deployment",
+                namespace=self.namespace,
+                resource_name="noobaa-operator",
+            ).get()
+
+            replicas = noobaa_deployment.get("spec", {}).get("replicas", 0)
+            if replicas == 0:
+                logger.info(
+                    "NooBaa operator deployment exists but is scaled to 0 - skipping MCG validation"
+                )
+                return
+        except Exception as e:
+            logger.warning(
+                f"NooBaa operator deployment not found: {e} - skipping MCG validation"
+            )
+            return
         self._mcg_obj = MCG()
 
     def cluster_health_check(self, timeout=300):
