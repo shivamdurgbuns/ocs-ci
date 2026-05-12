@@ -317,7 +317,7 @@ class ExternalCluster(object):
         """
         Return the cephadm-managed root CA (``cephadm_root_ca_cert``) from this host.
 
-        Used for Ceph 8.0+ when RGW TLS is signed by the cephadm CA. Runs
+        Used for Ceph 19+ when RGW TLS is signed by the cephadm CA. Runs
         ``cephadm shell``; prefixes ``sudo`` when the SSH user is not ``root``.
 
         Returns:
@@ -1176,11 +1176,19 @@ def _normalize_cephadm_certmgr_stdout(raw_stdout):
 
 def _external_ceph_semantic_version_or_none():
     """
-    Parse ``ceph --version`` from the default external SSH client (same as exporter).
+    Parse Ceph version from ``ceph --version`` on the default external SSH host.
+
+    Uses ``cephadm shell`` so the command runs in the cephadm environment; if that
+    fails (e.g. legacy non-cephadm layout), falls back to host ``ceph --version``.
     """
     try:
         ext = get_external_cluster_instance()
-        rc, out, _ = ext.rhcs_conn.exec_cmd("ceph --version")
+        cmd = "/usr/sbin/cephadm shell -- ceph --version"
+        if ext.user != "root":
+            cmd = f"sudo {cmd}"
+        rc, out, _ = ext.rhcs_conn.exec_cmd(cmd)
+        if rc != 0 or not (out or "").strip():
+            rc, out, _ = ext.rhcs_conn.exec_cmd("ceph --version")
         if rc != 0:
             return None
         m = re.search(r"ceph\s+version\s+(\d+)\.(\d+)", out, re.I)
@@ -1196,12 +1204,12 @@ def _external_ceph_semantic_version_or_none():
 
 def external_rgw_ca_should_use_cephadm_fetch():
     """
-    True when external Ceph reports version >= 8.0 (cephadm certmgr path).
+    True when external Ceph reports version >= 19.0 (cephadm certmgr path).
     """
     v = _external_ceph_semantic_version_or_none()
     if v is None:
         return False
-    return v >= version.get_semantic_version("8.0", only_major_minor=True)
+    return v >= version.get_semantic_version("19.0", only_major_minor=True)
 
 
 def try_embed_rgw_ca_pem_in_mcg_cli_resources(service_ca_data, sts_dict):
@@ -1228,7 +1236,7 @@ def try_embed_rgw_ca_pem_in_mcg_cli_resources(service_ca_data, sts_dict):
 
 def get_and_apply_rgw_cert_ca(apply=True):
     """
-    Obtain the RGW TLS CA: for external Ceph **8.0+**, fetch ``cephadm_root_ca_cert``
+    Obtain the RGW TLS CA: for external Ceph **19.0+**, fetch ``cephadm_root_ca_cert``
     from the ``_admin`` node via SSH; otherwise download from ``rgw_cert_ca`` URL.
 
     Args:
@@ -1256,7 +1264,7 @@ def get_and_apply_rgw_cert_ca(apply=True):
                 pem_fd.write(pem)
             config.EXTERNAL_MODE["_embedded_external_rgw_ca_pem"] = pem
             logger.info(
-                "Using cephadm_root_ca_cert from external cluster (Ceph >= 8.0)"
+                "Using cephadm_root_ca_cert from external cluster (Ceph >= 19.0)"
             )
         except Exception as exc:
             logger.warning(
@@ -1345,7 +1353,7 @@ def get_external_cluster_client(role=None):
     try:
         return get_node_by_role(nodes, role, user, password, ssh_key)
     except ExternalClusterNodeRoleNotFound:
-        logger.warning("No %s role defined, using node1 address!", role)
+        logger.warning(f"No {role} role defined, using node1 address!")
         return (nodes["node1"]["ip_address"], user, password, ssh_key)
 
 
