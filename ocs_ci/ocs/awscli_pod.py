@@ -157,7 +157,7 @@ def _add_startup_commands_to_set_ca(awscli_sts_dict):
     )
 
     if storagecluster_independent_check() and config.EXTERNAL_MODE.get("rgw_secure"):
-        if config.EXTERNAL_MODE.get("_embedded_external_rgw_ca_pem"):
+        if config.EXTERNAL_MODE.get("embedded_external_rgw_ca_pem"):
             startup_cmds.append(
                 f"cat {constants.EXTERNAL_RGW_CA_CONTAINER_PATH} >> {constants.AWSCLI_CA_BUNDLE_PATH}"
             )

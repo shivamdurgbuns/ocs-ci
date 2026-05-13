@@ -1214,13 +1214,13 @@ def external_rgw_ca_should_use_cephadm_fetch():
 
 def try_embed_rgw_ca_pem_in_mcg_cli_resources(service_ca_data, sts_dict):
     """
-    If deploy stashed ``_embedded_external_rgw_ca_pem``, add it to the service-ca
+    If deploy stashed ``embedded_external_rgw_ca_pem``, add it to the service-ca
     ConfigMap and add a matching volumeMount on ``sts_dict`` (first container).
 
     Returns:
         bool: True if embedding was applied.
     """
-    pem = config.EXTERNAL_MODE.get("_embedded_external_rgw_ca_pem")
+    pem = config.EXTERNAL_MODE.get("embedded_external_rgw_ca_pem")
     if not pem:
         return False
     service_ca_data.setdefault("data", {})[constants.EXTERNAL_RGW_CA_CM_KEY] = pem
@@ -1252,7 +1252,7 @@ def get_and_apply_rgw_cert_ca(apply=True):
         suffix=".pem",
         delete=False,
     ).name
-    config.EXTERNAL_MODE.pop("_embedded_external_rgw_ca_pem", None)
+    config.EXTERNAL_MODE.pop("embedded_external_rgw_ca_pem", None)
 
     if external_rgw_ca_should_use_cephadm_fetch():
         try:
@@ -1262,7 +1262,7 @@ def get_and_apply_rgw_cert_ca(apply=True):
             ).fetch_cephadm_root_ca_cert_pem()
             with open(rgw_cert_ca_path, "w", encoding="utf-8") as pem_fd:
                 pem_fd.write(pem)
-            config.EXTERNAL_MODE["_embedded_external_rgw_ca_pem"] = pem
+            config.EXTERNAL_MODE["embedded_external_rgw_ca_pem"] = pem
             logger.info(
                 "Using cephadm_root_ca_cert from external cluster (Ceph >= 19.0)"
             )

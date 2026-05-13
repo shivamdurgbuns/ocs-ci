@@ -3303,7 +3303,7 @@ def nb_stress_cli_pod_fixture(request, scope_name):
                 "rgw_secure"
             ):
                 log.info("Concatenating the RGW CA to the Stress CLI pod's CA bundle")
-                if ocsci_config.EXTERNAL_MODE.get("_embedded_external_rgw_ca_pem"):
+                if ocsci_config.EXTERNAL_MODE.get("embedded_external_rgw_ca_pem"):
                     pod_obj.exec_cmd_on_pod(
                         f"bash -c 'cat {constants.EXTERNAL_RGW_CA_CONTAINER_PATH} >> "
                         f"{constants.AWSCLI_CA_BUNDLE_PATH}'"
